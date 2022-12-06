@@ -18,13 +18,13 @@ internal class Solver
         return DetectSequence(input, 14, 0);
     }
 
-    private int DetectSequence(string input, int requiredLenght, int after)
+    private int DetectSequence(string input, int requiredLength, int after)
     {
         var span = input.AsSpan();
-        for (int i = after + requiredLenght; i < input.Length; i++)
+        for (int i = after + requiredLength; i < input.Length; i++)
         {
-            var x = span.Slice(i - requiredLenght, requiredLenght);
-            if (x.ToArray().Distinct().Count() == requiredLenght)
+            var x = span.Slice(i - requiredLength, requiredLength);
+            if (x.ToArray().Distinct().Count() == requiredLength)
                 return i;
         }
 
