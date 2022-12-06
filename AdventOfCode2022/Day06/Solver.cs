@@ -6,16 +6,16 @@ internal class Solver
 {
     public Solver()
     {
-        Debug.Assert(Solve("mjqjpqmgbljsphdztnvjfqwrcgsmlb") == 7);
-        Debug.Assert(Solve("bvwbjplbgvbhsrlpgdmjqwftvncz") == 5);
-        Debug.Assert(Solve("nppdvjthqldpwncqszvftbrmjlhg") == 6);
-        Debug.Assert(Solve("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg") == 10);
-        Debug.Assert(Solve("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw") == 11);
+        Debug.Assert(Solve("mjqjpqmgbljsphdztnvjfqwrcgsmlb") == 19);
+        Debug.Assert(Solve("bvwbjplbgvbhsrlpgdmjqwftvncz") == 23);
+        Debug.Assert(Solve("nppdvjthqldpwncqszvftbrmjlhg") == 23);
+        Debug.Assert(Solve("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg") == 29);
+        Debug.Assert(Solve("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw") == 26);
     }
 
     public int Solve(string input)
     {
-        return DetectSequence(input, 4, 0);
+        return DetectSequence(input, 14, 0);
     }
 
     private int DetectSequence(string input, int requiredLenght, int after)
