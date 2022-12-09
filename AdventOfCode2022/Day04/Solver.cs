@@ -11,7 +11,7 @@ internal class Solver
         2-8,3-7
         6-6,4-6
         2-6,4-8
-        """) == 2);
+        """) == 4);
     }
 
     public int Solve(string input)
@@ -21,7 +21,7 @@ internal class Solver
         foreach (var line in lines)
         {
             var (r1, r2) = ParseLine(line);
-            if (r1.FullyOverlapsWith(r2))
+            if (r1.PartiallyOverlapsWith(r2))
                 sum++;
         }
 
@@ -43,12 +43,12 @@ internal class Solver
 
 file record Range(int From, int To)
 {
-    public bool FullyOverlapsWith(Range other)
+    public bool PartiallyOverlapsWith(Range other)
     {
-        if (From <= other.From && To >= other.To)
+        if (From <= other.To && To >= other.From)
             return true;
 
-        if (From >= other.From && To <= other.To)
+        if (From >= other.To && To <= other.From)
             return true;
 
         return false;
