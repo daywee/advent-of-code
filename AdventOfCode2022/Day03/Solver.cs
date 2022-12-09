@@ -5,26 +5,22 @@ internal class Solver
     public Solver()
     {
         Debug.Assert(Solve("""
-vJrwpWtwJgWrhcsFMMfFFhFp
-jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
-PmmdzqPrVvPwwTWBwg
-wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
-ttgJtRGJQctTZtZT
-CrZsJsPPZsGzwwsLwLmpwMDw
-""") == 157);
+    vJrwpWtwJgWrhcsFMMfFFhFp
+    jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+    PmmdzqPrVvPwwTWBwg
+    wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+    ttgJtRGJQctTZtZT
+    CrZsJsPPZsGzwwsLwLmpwMDw
+    """) == 70);
     }
 
     public int Solve(string input)
     {
         var sum = 0;
         var lines = input.Split(Environment.NewLine);
-        foreach (var line in lines)
+        foreach (var linesOfthree in lines.Chunk(3))
         {
-            var half = line.Length / 2;
-            var firstPart = line[..half].ToHashSet();
-            var secondPart = line[half..].ToHashSet();
-
-            var commonItem = firstPart.Intersect(secondPart).Single();
+            var commonItem = linesOfthree[0].Intersect(linesOfthree[1]).Intersect(linesOfthree[2]).Single();
             var priority = GetPriority(commonItem);
 
             sum += priority;
@@ -33,7 +29,7 @@ CrZsJsPPZsGzwwsLwLmpwMDw
         return sum;
     }
 
-    private int GetPriority(char c)
+    private static int GetPriority(char c)
     {
         var alphabetLetterCount = 'z' - 'a' + 1;
 
