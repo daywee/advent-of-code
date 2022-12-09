@@ -28,19 +28,25 @@ internal class Solver
         8033020 d.log
         5626152 d.ext
         7214296 k
-        """) == 95437);
+        """) == 24933642);
     }
 
     public int Solve(string input)
     {
         var root = ParseDirectoryTree(input);
 
-        var directories = FindDirectories(root, 100_000);
+        var total = 70_000_000;
+        var neededForUpdate = 30_000_000;
+        var available = total - root.Size;
+        var neededToCleanUp = neededForUpdate - available;
 
-        return directories.Sum(e => e.Size);
+        var directories = FindDirectories(root);
+        var ordered = directories.OrderBy(e => e.Size);
+
+        return ordered.First(e => e.Size >= neededToCleanUp).Size;
     }
 
-    private static List<Directory> FindDirectories(Directory root, int maxSize)
+    private static List<Directory> FindDirectories(Directory root)
     {
         var result = new List<Directory>();
 
@@ -52,10 +58,7 @@ internal class Solver
             var current = toExplore.Dequeue();
             current.Directories.ForEach(e => toExplore.Enqueue(e));
 
-            if (current.Size <= maxSize)
-            {
-                result.Add(current);
-            }
+            result.Add(current);
         }
 
         return result;
