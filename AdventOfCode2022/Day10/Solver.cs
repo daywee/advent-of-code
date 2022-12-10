@@ -4,7 +4,53 @@ internal class Solver
 {
     public Solver()
     {
-        Debug.Assert(Solve("""
+        Solve(TestInput);
+        Console.WriteLine();
+    }
+
+    public string Solve(string input)
+    {
+        var registerX = 1;
+        var cycle = 1;
+        var lines = input.Split(Environment.NewLine);
+        foreach (var line in lines)
+        {
+            var instruction = line.Split(' ');
+            switch (instruction[0])
+            {
+                case "noop":
+                    CycleCallback();
+                    cycle++;
+                    break;
+                case "addx":
+                    var parameter = int.Parse(instruction[1]);
+                    CycleCallback();
+                    cycle++;
+                    CycleCallback();
+                    cycle++;
+                    registerX += parameter;
+                    break;
+                default:
+                    throw new Exception();
+            }
+        }
+
+        return string.Empty;
+
+        void CycleCallback()
+        {
+            var pos = (cycle - 1) % 40;
+            if (pos == 0)
+                Console.WriteLine();
+
+            if (registerX - pos <= 1 && registerX - pos >= -1)
+                Console.Write("#");
+            else
+                Console.Write(".");
+        }
+    }
+
+    private const string TestInput = """
         addx 15
         addx -11
         addx 6
@@ -151,46 +197,5 @@ internal class Solver
         noop
         noop
         noop
-        """) == 13140);
-    }
-
-    public int Solve(string input)
-    {
-        var registerX = 1;
-        var cycle = 1;
-        var sum = 0;
-        var lines = input.Split(Environment.NewLine);
-        foreach (var line in lines)
-        {
-            var instruction = line.Split(' ');
-            switch (instruction[0])
-            {
-                case "noop":
-                    CycleCallback();
-                    cycle++;
-                    break;
-                case "addx":
-                    var parameter = int.Parse(instruction[1]);
-                    CycleCallback();
-                    cycle++;
-                    CycleCallback();
-                    cycle++;
-                    registerX += parameter;
-                    break;
-                default:
-                    throw new Exception();
-            }
-        }
-
-        return sum;
-
-        void CycleCallback()
-        {
-            if ((cycle - 20) % 40 == 0)
-            {
-                var signalStrength = cycle * registerX;
-                sum += signalStrength;
-            }
-        }
-    }
+        """;
 }
