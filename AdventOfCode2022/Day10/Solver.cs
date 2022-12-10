@@ -1,15 +1,17 @@
-﻿namespace AdventOfCode2022.Day10;
+﻿using System.Text;
+
+namespace AdventOfCode2022.Day10;
 
 internal class Solver
 {
     public Solver()
     {
-        Solve(TestInput);
-        Console.WriteLine();
+        Debug.Assert(Solve(TestInput) == TestOutput);
     }
 
     public string Solve(string input)
     {
+        var screen = new StringBuilder();
         var registerX = 1;
         var cycle = 1;
         var lines = input.Split(Environment.NewLine);
@@ -35,18 +37,18 @@ internal class Solver
             }
         }
 
-        return string.Empty;
+        return screen.ToString();
 
         void CycleCallback()
         {
             var pos = (cycle - 1) % 40;
             if (pos == 0)
-                Console.WriteLine();
+                screen.AppendLine();
 
             if (registerX - pos <= 1 && registerX - pos >= -1)
-                Console.Write("#");
+                screen.Append("#");
             else
-                Console.Write(".");
+                screen.Append(".");
         }
     }
 
@@ -197,5 +199,14 @@ internal class Solver
         noop
         noop
         noop
+        """;
+    private const string TestOutput = """
+
+        ##..##..##..##..##..##..##..##..##..##..
+        ###...###...###...###...###...###...###.
+        ####....####....####....####....####....
+        #####.....#####.....#####.....#####.....
+        ######......######......######......####
+        #######.......#######.......#######.....
         """;
 }
