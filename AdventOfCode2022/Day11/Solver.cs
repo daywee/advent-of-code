@@ -35,13 +35,20 @@ public class Solver
           Test: divisible by 17
             If true: throw to monkey 0
             If false: throw to monkey 1
-        """) == 10605);
+        """) == 2713310158);
     }
 
-    public int Solve(string input)
+    public long Solve(string input)
     {
-        var rounds = 20;
+        var rounds = 10_000;
         var monkeys = ParseInput(input);
+
+        // Trick: Find common modulo, so we can keep worry levels reasonably low.
+        var modulo = 1;
+        foreach (var monkey in monkeys)
+        {
+            modulo *= monkey.DivisibleTest;
+        }
 
         for (int round = 0; round < rounds; round++)
         {
@@ -50,7 +57,7 @@ public class Solver
                 foreach (var itemWorryLevel in monkey.ItemWorryLevels)
                 {
                     var newWorryLevel = monkey.GetNewWorryLevel(itemWorryLevel);
-                    newWorryLevel /= 3;
+                    newWorryLevel %= modulo;
 
                     var throwToMonkey = newWorryLevel % monkey.DivisibleTest == 0
                         ? monkey.MonkeyIdToThrowWhenDivisibleTestIsTrue
@@ -65,7 +72,7 @@ public class Solver
         }
 
         var mostActiveMonkeys = monkeys.OrderByDescending(e => e.ItemsInspected).Take(2);
-        var monkeyBusiness = mostActiveMonkeys.Aggregate(1, (e, acc) => e * acc.ItemsInspected);
+        var monkeyBusiness = mostActiveMonkeys.Aggregate(1L, (e, acc) => e * acc.ItemsInspected);
 
         return monkeyBusiness;
     }
@@ -85,7 +92,7 @@ public class Solver
                 switch (monkeyAttribute)
                 {
                     case ["Starting items", var items]:
-                        monkey.ItemWorryLevels = new List<int>(items.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(int.Parse));
+                        monkey.ItemWorryLevels = new List<long>(items.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(long.Parse));
                         break;
                     case ["Operation", var operation]:
                         monkey.Operation = operation;
@@ -113,10 +120,10 @@ public class Solver
 
     private class Monkey
     {
-        private Script<int> _script;
+        private Script<long> _script;
 
         public int Id { get; set; }
-        public List<int> ItemWorryLevels { get; set; }
+        public List<long> ItemWorryLevels { get; set; }
         public string Operation { get; set; }
         public int DivisibleTest { get; set; }
         public int MonkeyIdToThrowWhenDivisibleTestIsTrue { get; set; }
@@ -124,7 +131,7 @@ public class Solver
 
         public int ItemsInspected { get; set; }
 
-        public int GetNewWorryLevel(int old)
+        public long GetNewWorryLevel(long old)
         {
             var result = _script.RunAsync(new ScriptGlobals { old = old }).Result;
 
@@ -138,13 +145,13 @@ public class Solver
                 return @new;
                 """;
 
-            _script = CSharpScript.Create<int>(script, globalsType: typeof(ScriptGlobals));
+            _script = CSharpScript.Create<long>(script, globalsType: typeof(ScriptGlobals));
             _script.Compile();
         }
     }
 
     public class ScriptGlobals
     {
-        public int old;
+        public long old;
     }
 }
