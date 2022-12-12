@@ -13,7 +13,7 @@ internal class Solver
         accszExk
         acctuvwj
         abdefghi
-        """) == 31);
+        """) == 29);
     }
 
     public int Solve(string input)
@@ -23,19 +23,35 @@ internal class Solver
         var sizeX = lines[0].Length;
         var sizeY = lines.Length;
 
-        var start = FindPoint(StartPoint);
         var end = FindPoint(EndPoint);
 
         var visitedMap = new int[sizeX, sizeY];
+
+        var min = int.MaxValue;
         for (int i = 0; i < sizeX; i++)
+        {
             for (int j = 0; j < sizeY; j++)
-                visitedMap[i, j] = int.MaxValue;
+            {
+                ClearVisitedMap();
 
-        Traverse(start.X, start.Y);
+                if (lines[j][i] == 'a')
+                {
+                    Traverse(i, j);
+                    var stepsNeeded = visitedMap[end.X, end.Y];
+                    min = int.Min(stepsNeeded, min);
+                }
 
-        var stepsNeeded = visitedMap[end.X, end.Y];
+            }
+        }
 
-        return stepsNeeded;
+        return min;
+
+        void ClearVisitedMap()
+        {
+            for (int i = 0; i < sizeX; i++)
+                for (int j = 0; j < sizeY; j++)
+                    visitedMap[i, j] = int.MaxValue;
+        }
 
         void Traverse(int startX, int startY)
         {
