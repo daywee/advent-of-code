@@ -2,44 +2,77 @@ namespace AdventOfCode.Year2023.Day01;
 
 internal class Solver
 {
+    private static readonly Dictionary<string, int> _wordValues = new()
+    {
+        { "one", 1 },
+        { "two", 2 },
+        { "three", 3 },
+        { "four", 4 },
+        { "five", 5 },
+        { "six", 6 },
+        { "seven", 7 },
+        { "eight", 8 },
+        { "nine", 9 },
+        { "0", 0 },
+        { "1", 1 },
+        { "2", 2 },
+        { "3", 3 },
+        { "4", 4 },
+        { "5", 5 },
+        { "6", 6 },
+        { "7", 7 },
+        { "8", 8 },
+        { "9", 9 },
+    };
+
     public Solver()
     {
         Debug.Assert(Solve("""
-1abc2
-pqr3stu8vwx
-a1b2c3d4e5f
-treb7uchet
-""") == 142);
+        two1nine
+        eightwothree
+        abcone2threexyz
+        xtwone3four
+        4nineeightseven2
+        zoneight234
+        7pqrstsixteen
+        """) == 281);
     }
 
     public int Solve(string input)
     {
         var rows = input.Split(Environment.NewLine);
 
-        var digits = new List<char>[rows.Length];
+        var result = 0;
 
         for (int i = 0; i < rows.Length; i++)
         {
-            digits[i] = [];
-
             var row = rows[i];
 
-            foreach (var c in row)
-            {
-                if (char.IsDigit(c))
-                {
-                    //var value = (int)char.GetNumericValue(c);
-                    digits[i].Add(c);
-                }
-            }
+            var a = FindFirst(row);
+            var b = FindLast(row);
+
+            var num = int.Parse($"{a}{b}");
+            result += num;
         }
 
-        var result = digits
-            .Select(e => $"{e.First()}{e.Last()}")
-            .Select(e => int.Parse(e))
-            .Sum();
-
-
         return result;
+    }
+
+    private static int FindFirst(string text)
+    {
+        return _wordValues
+            .Select(e => (text.IndexOf(e.Key), e.Value))
+            .Where(e => e.Item1 >= 0)
+            .MinBy(e => e.Item1)
+            .Value;
+    }
+
+    private static int FindLast(string text)
+    {
+        return _wordValues
+            .Select(e => (text.LastIndexOf(e.Key), e.Value))
+            .Where(e => e.Item1 >= 0)
+            .MaxBy(e => e.Item1)
+            .Value;
     }
 }
