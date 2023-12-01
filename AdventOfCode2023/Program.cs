@@ -3,6 +3,9 @@ using TextCopy;
 
 // Copied from github.com/JanVargovsky/advent-of-code
 
+await CreateSolverStructureAsync(@"c:\DevGit\workspace\advent-of-code\AdventOfCode2023\");
+return;
+
 const int year = 2023;
 var day = args.Length > 0 ? int.Parse(args[0]) : DateTime.UtcNow.Day;
 var dayFolder = GetDayFolder(day);
