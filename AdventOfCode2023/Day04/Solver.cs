@@ -13,7 +13,7 @@ Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
 Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
 Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
 Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
-""") == 13);
+""") == 30);
     }
 
     public int Solve(string input)
@@ -21,8 +21,15 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
         var result = 0;
 
         var rows = input.Split(Environment.NewLine);
-        foreach (var row in rows)
+
+        var numberOfCopies = new int[rows.Length];
+        for (int i = 0; i < numberOfCopies.Length; i++)
+            numberOfCopies[i] = 1;
+
+        for (int i = 0; i < numberOfCopies.Length; i++)
         {
+            var row = rows[i];
+
             if (!(row.Split(new[] { ':', '|' }, _removeAndTrim) is [var cardPart, var winningPart, var guessedPart]))
                 throw new InvalidOperationException();
 
@@ -31,12 +38,13 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 
             var guessedCorrectly = winning.Where(w => guessed.Contains(w)).Count();
 
-            var cardResult = (int)Math.Pow(2, guessedCorrectly - 1);
-
-            result += cardResult;
+            for (int j = i + 1; j <= Math.Min(i + guessedCorrectly, numberOfCopies.Length); j++)
+            {
+                numberOfCopies[j] = numberOfCopies[j] + numberOfCopies[i];
+            }
         }
 
-        return result;
+        return numberOfCopies.Sum();
     }
 
     private static int[] ParseNumbers(string input)
