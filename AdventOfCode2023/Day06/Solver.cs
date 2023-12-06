@@ -12,34 +12,23 @@ Distance:  9  40  200
 """) == 288);
     }
 
-    public int Solve(string input)
+    public long Solve(string input)
     {
-        var result = 1;
-
         var rows = input.Split(Environment.NewLine);
-        var raceDurations = rows[0].Split(' ', _removeAndTrim).Skip(1).Select(int.Parse).ToArray();
-        var raceDistances = rows[1].Split(' ', _removeAndTrim).Skip(1).Select(int.Parse).ToArray();
+        var raceDuration = long.Parse(string.Join("", rows[0].Split(' ', _removeAndTrim).Skip(1)));
+        var raceDistance = long.Parse(string.Join("", rows[1].Split(' ', _removeAndTrim).Skip(1)));
 
-        for (int i = 0; i < raceDurations.Length; i++)
-        {
-            var duration = raceDurations[i];
-            var distance = raceDistances[i];
+        var lower = GetLowerBound(raceDuration, raceDistance);
+        var upper = GetUpperBound(raceDuration, raceDistance);
 
-            var lower = GetLowerBound(duration, distance);
-            var upper = GetUpperBound(duration, distance);
+        var numberOfWaysToBeatRecord = upper - lower + 1;
 
-            var numberOfWaysToBeatRecord = upper - lower + 1;
-
-            result *= numberOfWaysToBeatRecord;
-        }
-
-
-        return result;
+        return numberOfWaysToBeatRecord;
     }
 
-    private int GetLowerBound(int duration, int distance)
+    private long GetLowerBound(long duration, long distance)
     {
-        for (int speed = 0; speed < duration; speed++)
+        for (long speed = 0; speed < duration; speed++)
         {
             var travelingTime = duration - speed;
             var traveledDistance = travelingTime * speed;
@@ -53,9 +42,9 @@ Distance:  9  40  200
         throw new InvalidOperationException();
     }
 
-    private int GetUpperBound(int duration, int distance)
+    private long GetUpperBound(long duration, long distance)
     {
-        for (int speed = duration - 1; speed >= 0; speed--)
+        for (long speed = duration - 1; speed >= 0; speed--)
         {
             var travelingTime = duration - speed;
             var traveledDistance = travelingTime * speed;
