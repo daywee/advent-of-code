@@ -39,25 +39,63 @@ temperature-to-humidity map:
 humidity-to-location map:
 60 56 37
 56 93 4
-""") == 35);
+""") == 46);
     }
 
     public long Solve(string input)
     {
         var rows = input.Split(Environment.NewLine);
 
-        var (seeds, maps) = ParseInput(rows);
+        var (seedRanges, maps) = ParseInput(rows);
+        var seedCount = GetSeedCount(seedRanges);
 
-        var result = seeds.Select(e => MapAll(e)).Min();
+        var sw = Stopwatch.StartNew();
+
+        // this is naive brute force solution
+        var result = GetSeeds(seedRanges)
+            .Select((e, i) =>
+            {
+                if (i % 1_000_000 == 0)
+                    Console.WriteLine($"{i}/{seedCount} ({(double)i / seedCount * 100}%) - elapsed {sw.Elapsed.TotalMinutes} minutes");
+                return MapAll(e);
+            })
+            .Min();
 
         return result;
 
         long MapAll(long seed) => maps!.Aggregate(seed, (acc, map) => map.MapToDestination(acc));
     }
 
-    private (long[] Seeds, List<Map> Maps) ParseInput(string[] rows)
+    private IEnumerable<long> GetSeeds(long[] seedRanges)
     {
-        var seeds = rows[0].Split(' ', _removeAndTrim).Skip(1).Select(long.Parse).ToArray();
+        for (int i = 0; i < seedRanges.Length / 2; i++)
+        {
+            var from = seedRanges[i * 2];
+            var range = seedRanges[i * 2 + 1];
+
+            Console.WriteLine($"doing from:{from} range:{range}");
+            for (long j = 0; j < range; j++)
+            {
+                yield return from + j;
+            }
+        }
+    }
+
+    private long GetSeedCount(long[] seedRanges)
+    {
+        long sum = 0;
+        for (int i = 0; i < seedRanges.Length / 2; i++)
+        {
+            var range = seedRanges[i * 2 + 1];
+            sum += range;
+        }
+
+        return sum;
+    }
+
+    private (long[] SeedRanges, List<Map> Maps) ParseInput(string[] rows)
+    {
+        var seedRanges = rows[0].Split(' ', _removeAndTrim).Skip(1).Select(long.Parse).ToArray();
 
         var maps = new List<Map>
         {
@@ -92,7 +130,7 @@ humidity-to-location map:
             currentMap!.AddMappingRule(mappingIds[0], mappingIds[1], mappingIds[2]);
         }
 
-        return (seeds, maps);
+        return (seedRanges, maps);
     }
 
     class Map
