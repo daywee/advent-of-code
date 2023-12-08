@@ -18,7 +18,7 @@ XXX = (XXX, XXX)
 """) == 6);
     }
 
-    public int Solve(string input)
+    public long Solve(string input)
     {
         var rows = input.Split(Environment.NewLine);
 
@@ -28,13 +28,11 @@ XXX = (XXX, XXX)
 
         var numberOfStepsForEachNode = startNodes.Select(FindNumberOfSteps).ToArray();
 
-        // The result is LCM (Least Common Multiple)
-        // https://www.calculatorsoup.com/calculators/math/lcm.php?input=16579+18827+19951+12083+22199+17141&data=none&action=solve
-        // Result: 16,342,438,708,751
+        var result = MathNet.Numerics.Euclid.LeastCommonMultiple(numberOfStepsForEachNode);
 
-        return 0;
+        return result;
 
-        int FindNumberOfSteps(Node startNode)
+        long FindNumberOfSteps(Node startNode)
         {
             var currentNode = startNode;
             var steps = 0;
