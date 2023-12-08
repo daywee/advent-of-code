@@ -5,16 +5,17 @@ internal class Solver
     public Solver()
     {
         Debug.Assert(Solve("""
-RL
+LR
 
-AAA = (BBB, CCC)
-BBB = (DDD, EEE)
-CCC = (ZZZ, GGG)
-DDD = (DDD, DDD)
-EEE = (EEE, EEE)
-GGG = (GGG, GGG)
-ZZZ = (ZZZ, ZZZ)
-""") == 2);
+11A = (11B, XXX)
+11B = (XXX, 11Z)
+11Z = (11B, XXX)
+22A = (22B, XXX)
+22B = (22C, 22C)
+22C = (22Z, 22Z)
+22Z = (22B, 22B)
+XXX = (XXX, XXX)
+""") == 6);
     }
 
     public int Solve(string input)
@@ -23,26 +24,35 @@ ZZZ = (ZZZ, ZZZ)
 
         var (instructions, nodes) = ParseInput(rows);
 
-        var startNode = "AAA";
-        var endNode = "ZZZ";
+        var startNodes = nodes.Where(e => e.Key.EndsWith('A')).Select(e => e.Value).ToArray();
 
-        var currentNode = nodes[startNode];
+        var numberOfStepsForEachNode = startNodes.Select(FindNumberOfSteps).ToArray();
 
-        var steps = 0;
-        do
+        // The result is LCM (Least Common Multiple)
+        // https://www.calculatorsoup.com/calculators/math/lcm.php?input=16579+18827+19951+12083+22199+17141&data=none&action=solve
+        // Result: 16,342,438,708,751
+
+        return 0;
+
+        int FindNumberOfSteps(Node startNode)
         {
-            var instruction = instructions[steps % instructions.Length];
-
-            steps++;
-            currentNode = instruction switch
+            var currentNode = startNode;
+            var steps = 0;
+            do
             {
-                'L' => nodes[currentNode.Left],
-                'R' => nodes[currentNode.Right],
-                _ => throw new InvalidOperationException(),
-            };
-        } while (currentNode.Value != endNode);
+                var instruction = instructions[steps % instructions.Length];
 
-        return steps;
+                steps++;
+                currentNode = instruction switch
+                {
+                    'L' => nodes[currentNode.Left],
+                    'R' => nodes[currentNode.Right],
+                    _ => throw new InvalidOperationException(),
+                };
+            } while (!currentNode.Value.EndsWith('Z'));
+
+            return steps;
+        }
     }
 
     private (string Instructions, Dictionary<string, Node> Nodes) ParseInput(string[] rows)
