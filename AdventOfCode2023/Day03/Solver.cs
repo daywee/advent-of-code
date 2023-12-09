@@ -15,7 +15,7 @@ internal class Solver
 ......755.
 ...$.*....
 .664.598..
-""") == 4361);
+""") == 467835);
     }
 
     public int Solve(string input)
@@ -23,7 +23,13 @@ internal class Solver
         var rows = input.Split(Environment.NewLine);
         var matrix = CreateMatrix(rows);
         var parts = FindParts(matrix);
-        var result = parts.Sum(e => e.Value);
+
+        var result = parts
+            .SelectMany(e => e.GearsNearBy, (part, gear) => new PartNumberOneGear(part.Value, part.Point, gear))
+            .GroupBy(e => e.GearNearBy)
+            .Where(e => e.Count() == 2)
+            .Select(e => e.First().Value * e.Last().Value)
+            .Sum();
 
         return result;
     }
@@ -35,7 +41,7 @@ internal class Solver
         {
             var partNumber = 0;
             Point? partLocation = null;
-            var hasPartNearBy = false;
+            var gearPartsNearBy = new HashSet<Point>();
 
             for (int i = 0; i < matrix.GetLength(0); i++)
             {
@@ -46,25 +52,26 @@ internal class Solver
 
                     partNumber *= 10;
                     partNumber += (int)char.GetNumericValue(value);
-                    if (GetNearByPoints(i, j, matrix).Any(e => IsPartSymbol(matrix[e.X, e.Y])))
-                        hasPartNearBy = true;
+
+                    var gears = GetNearByPoints(i, j, matrix).Where(e => IsGearPartSymbol(matrix[e.X, e.Y]));
+                    gearPartsNearBy.UnionWith(gears);
                 }
 
                 if ((!char.IsDigit(value) || i == matrix.GetLength(0) - 1) && partLocation is not null)
                 {
-                    if (hasPartNearBy)
-                        parts.Add(new PartNumber(partNumber, partLocation));
+                    if (gearPartsNearBy.Any())
+                        parts.Add(new PartNumber(partNumber, partLocation, gearPartsNearBy));
 
                     partNumber = 0;
                     partLocation = null;
-                    hasPartNearBy = false;
+                    gearPartsNearBy = new HashSet<Point>();
                 }
             }
         }
 
         return parts;
 
-        bool IsPartSymbol(char symbol) => !char.IsDigit(symbol) && symbol != '.';
+        bool IsGearPartSymbol(char symbol) => symbol == '*';
     }
 
     private IEnumerable<Point> GetNearByPoints(int i, int j, char[,] matrix)
@@ -106,5 +113,6 @@ internal class Solver
     }
 
     private record Point(int X, int Y);
-    private record PartNumber(int Value, Point Point);
+    private record PartNumber(int Value, Point Point, HashSet<Point> GearsNearBy);
+    private record PartNumberOneGear(int Value, Point Point, Point GearNearBy);
 }
