@@ -8,7 +8,7 @@ internal class Solver
 0 3 6 9 12 15
 1 3 6 10 15 21
 10 13 16 21 30 45
-""") == 114);
+""") == 2);
     }
 
     public int Solve(string input)
@@ -36,12 +36,12 @@ internal class Solver
             var last = differences[i];
             var secondLast = differences[i - 1];
 
-            var extrapolated = secondLast.Last() + last.Last();
+            var extrapolated = secondLast[0] - last[0];
 
-            secondLast.Add(extrapolated);
+            secondLast.Insert(0, extrapolated);
         }
 
-        return differences[0].Last();
+        return differences[0][0];
     }
 
     private List<List<int>> CreateDifferences(List<int> history)
