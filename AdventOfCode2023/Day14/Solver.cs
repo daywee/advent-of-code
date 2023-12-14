@@ -4,6 +4,8 @@ namespace AdventOfCode.Year2023.Day14;
 
 internal class Solver
 {
+    public const int Iterations = 1_000_000_000;
+
     public Solver()
     {
         Debug.Assert(Solve("""
@@ -27,7 +29,9 @@ O.#..O.#.#
 
         var directions = new List<FacingDirection> { FacingDirection.Up, FacingDirection.Left, FacingDirection.Down, FacingDirection.Right };
 
-        for (int i = 0; i < 1_000_000_000; i++)
+        var loadPerCycle = new List<int>();
+
+        for (int i = 0; i < Iterations; i++)
         {
             foreach (var direction in directions)
             {
@@ -35,15 +39,39 @@ O.#..O.#.#
                 matrix.TiltUp();
             }
 
-            if (i % 1_000_000 == 0)
-                Console.WriteLine(i);
+            loadPerCycle.Add(matrix.GetTotalLoad());
+
+            var cycle = DetectCycle();
+            if (cycle.HasValue)
+                return cycle.Value;
         }
 
-        matrix.Print();
+        throw new InvalidOperationException("Cycle not detected.");
 
-        var result = matrix.GetTotalLoad();
+        int? DetectCycle()
+        {
+            const int maxCycleLength = 100;
+            const int minCycleLength = 10;
 
-        return result;
+            if (loadPerCycle.Count < maxCycleLength * 2)
+                return null;
+
+            for (int cycleLength = minCycleLength; cycleLength < maxCycleLength; cycleLength++)
+            {
+                var from = loadPerCycle.Count - cycleLength;
+
+                var detected = Enumerable.Range(from, cycleLength).All(i => loadPerCycle[i] == loadPerCycle[i - cycleLength]);
+                if (detected)
+                {
+                    var x = (Iterations - from) % cycleLength;
+                    var result = loadPerCycle[from + x - 1];
+
+                    return result;
+                }
+            }
+
+            return null;
+        }
     }
 
     private class Matrix
