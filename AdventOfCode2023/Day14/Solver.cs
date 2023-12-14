@@ -17,7 +17,7 @@ O.#..O.#.#
 .......O..
 #....###..
 #OO..#....
-""") == 136);
+""") == 64);
     }
 
     public int Solve(string input)
@@ -25,7 +25,20 @@ O.#..O.#.#
         var rows = input.Split(Environment.NewLine);
         var matrix = new Matrix(rows);
 
-        matrix.TiltUp();
+        var directions = new List<FacingDirection> { FacingDirection.Up, FacingDirection.Left, FacingDirection.Down, FacingDirection.Right };
+
+        for (int i = 0; i < 1_000_000_000; i++)
+        {
+            foreach (var direction in directions)
+            {
+                matrix.Direction = direction;
+                matrix.TiltUp();
+            }
+
+            if (i % 1_000_000 == 0)
+                Console.WriteLine(i);
+        }
+
         matrix.Print();
 
         var result = matrix.GetTotalLoad();
@@ -40,18 +53,57 @@ O.#..O.#.#
         public Matrix(string[] rows)
         {
             _matrix = CreateMatrix(rows);
+            Direction = FacingDirection.Up;
+        }
+
+        public FacingDirection Direction { get; set; }
+
+        private int GetDimension(int dimension)
+        {
+            return Direction switch
+            {
+                FacingDirection.Up or FacingDirection.Down => _matrix.GetLength(dimension),
+                FacingDirection.Left or FacingDirection.Right => _matrix.GetLength(dimension == 0 ? 1 : 0),
+                _ => throw new InvalidOperationException(),
+            };
+        }
+
+        private (int X, int Y) RotatePosition(int x, int y)
+        {
+            return Direction switch
+            {
+                FacingDirection.Up => (x, y),
+                FacingDirection.Left => (y, _matrix.GetLength(1) - x - 1),
+                FacingDirection.Down => (_matrix.GetLength(1) - x - 1, _matrix.GetLength(0) - y - 1),
+                FacingDirection.Right => (_matrix.GetLength(0) - y - 1, x),
+                _ => throw new InvalidOperationException(),
+            };
+        }
+
+        private char GetSymbol(int x, int y)
+        {
+            var (rx, ry) = RotatePosition(x, y);
+
+            return _matrix[rx, ry];
+        }
+
+        private void SetSymbol(int x, int y, char value)
+        {
+            var (rx, ry) = RotatePosition(x, y);
+
+            _matrix[rx, ry] = value;
         }
 
         public void TiltUp()
         {
-            for (int i = 0; i < _matrix.GetLength(0); i++)
+            for (int i = 0; i < GetDimension(0); i++)
             {
                 var firstEmpty = 0;
                 var rocks = 0;
 
-                for (int j = 0; j < _matrix.GetLength(1); j++)
+                for (int j = 0; j < GetDimension(1); j++)
                 {
-                    var symbol = _matrix[i, j];
+                    var symbol = GetSymbol(i, j);
                     if (symbol == '#')
                     {
                         MoveRocks();
@@ -69,7 +121,7 @@ O.#..O.#.#
                     if (symbol == 'O')
                     {
                         rocks++;
-                        _matrix[i, j] = '.';
+                        SetSymbol(i, j, '.');
                         continue;
                     }
                 }
@@ -80,7 +132,7 @@ O.#..O.#.#
                 {
                     for (int r = 0; r < rocks; r++)
                     {
-                        _matrix[i, firstEmpty + r] = 'O';
+                        SetSymbol(i, firstEmpty + r, 'O');
                     }
                 }
             }
@@ -134,5 +186,10 @@ O.#..O.#.#
 
             return matrix;
         }
+    }
+
+    private enum FacingDirection
+    {
+        Up, Left, Down, Right
     }
 }
