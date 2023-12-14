@@ -29,7 +29,8 @@ O.#..O.#.#
 
         var directions = new List<FacingDirection> { FacingDirection.Up, FacingDirection.Left, FacingDirection.Down, FacingDirection.Right };
 
-        var loadPerCycle = new List<int>();
+        var hashToIterationMapping = new Dictionary<int, int>();
+        var totalLoads = new List<int>();
 
         for (int i = 0; i < Iterations; i++)
         {
@@ -39,39 +40,23 @@ O.#..O.#.#
                 matrix.TiltUp();
             }
 
-            loadPerCycle.Add(matrix.GetTotalLoad());
+            var hash = matrix.GetHash();
 
-            var cycle = DetectCycle();
-            if (cycle.HasValue)
-                return cycle.Value;
+            if (!hashToIterationMapping.TryAdd(hash, i))
+            {
+                var seenAt = hashToIterationMapping[hash];
+                var cycleLength = i - seenAt;
+                var index = seenAt + ((Iterations - seenAt) % cycleLength) - 1;
+
+                var result = totalLoads[index];
+
+                return result;
+            }
+
+            totalLoads.Add(matrix.GetTotalLoad());
         }
 
         throw new InvalidOperationException("Cycle not detected.");
-
-        int? DetectCycle()
-        {
-            const int maxCycleLength = 100;
-            const int minCycleLength = 10;
-
-            if (loadPerCycle.Count < maxCycleLength * 2)
-                return null;
-
-            for (int cycleLength = minCycleLength; cycleLength < maxCycleLength; cycleLength++)
-            {
-                var from = loadPerCycle.Count - cycleLength;
-
-                var detected = Enumerable.Range(from, cycleLength).All(i => loadPerCycle[i] == loadPerCycle[i - cycleLength]);
-                if (detected)
-                {
-                    var x = (Iterations - from) % cycleLength;
-                    var result = loadPerCycle[from + x - 1];
-
-                    return result;
-                }
-            }
-
-            return null;
-        }
     }
 
     private class Matrix
@@ -183,6 +168,20 @@ O.#..O.#.#
             }
 
             return sum;
+        }
+
+        public int GetHash()
+        {
+            var hash = 0;
+            for (int j = 0; j < _matrix.GetLength(1); j++)
+            {
+                for (int i = 0; i < _matrix.GetLength(0); i++)
+                {
+                    hash += (int)_matrix[i, j] * i * j;
+                }
+            }
+
+            return hash;
         }
 
         public void Print()
