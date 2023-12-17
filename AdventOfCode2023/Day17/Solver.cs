@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text;
 
 namespace AdventOfCode.Year2023.Day17;
 
@@ -52,7 +53,7 @@ internal class Solver
             var distanceMapping = new Dictionary<Point2, int>(); // Distance aka Heat loss
 
             var queue = new Queue<(Point2 NextPoint, PreviousTurns PreviousTurns)>();
-            queue.Enqueue((startPoint, new PreviousTurns(0, 'L', 0)));
+            queue.Enqueue((startPoint, new PreviousTurns(0, '-', 0)));
 
             while (queue.Count > 0)
             {
@@ -83,7 +84,66 @@ internal class Solver
 
             var distance = distanceMapping[endPoint] - _heatMatrix[startPoint.X, startPoint.Y] + _heatMatrix[endPoint.X, endPoint.Y];
 
+            BacktrackAndPrint(distanceMapping, startPoint, endPoint, distanceMapping[endPoint]);
+
             return distance;
+        }
+
+        private void BacktrackAndPrint(Dictionary<Point2, int> distanceMapping, Point2 startPoint, Point2 endPoint, int endDistance)
+        {
+            var printMatrix = new char[_heatMatrix.GetLength(0), _heatMatrix.GetLength(1)];
+            var currentPoint = endPoint;
+            var currentDistance = endDistance;
+
+            while (currentPoint != startPoint)
+            {
+                var currentPointDistance = _heatMatrix[currentPoint.X, currentPoint.Y];
+
+                var r = currentPoint + Point2.ToRight;
+                var l = currentPoint + Point2.ToLeft;
+                var u = currentPoint + Point2.ToUp;
+                var d = currentPoint + Point2.ToDown;
+
+                //Debug.Assert(new[] { r, l, u, d }.Where(e => GetPoint(e)).Count() == 1);
+                var x = new[] { r, l, u, d }.Where(p => distanceMapping.TryGetValue(p, out var val) && val == currentDistance - currentPointDistance).ToList();
+                Debug.Assert(new[] { r, l, u, d }.Where(p => distanceMapping.TryGetValue(p, out var val) && val == currentDistance - currentPointDistance).Count() == 1);
+
+                if (Do(r)) continue;
+                if (Do(l)) continue;
+                if (Do(u)) continue;
+                if (Do(d)) continue;
+
+                bool Do(Point2 p)
+                {
+                    if (distanceMapping.TryGetValue(p, out var val) && val == currentDistance - currentPointDistance)
+                    {
+                        currentPoint = p;
+                        currentDistance -= currentPointDistance;
+                        printMatrix[currentPoint.X, currentPoint.Y] = 'X';
+
+                        return true;
+                    }
+                    return false;
+                }
+
+                //bool GetPoint(Point2 p)
+                //{
+                //    return distanceMapping.TryGetValue(p, out var val) && val == currentDistance - currentPointDistance;
+                //}
+            }
+
+            var sb = new StringBuilder();
+            for (int j = 0; j < printMatrix.GetLength(1); j++)
+            {
+                for (int i = 0; i < printMatrix.GetLength(0); i++)
+                {
+                    var symbol = printMatrix[i, j] == 'X' ? 'X' : '.';
+                    sb.Append(symbol);
+                }
+                sb.AppendLine();
+            }
+
+            Console.WriteLine(sb.ToString());
         }
 
         private static PreviousTurns? CreateNewTurns(char wantedDirection, int currentDistance, PreviousTurns previousTurns)
