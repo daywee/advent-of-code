@@ -10,7 +10,7 @@ T55J5 684
 KK677 28
 KTJJT 220
 QQQJA 483
-""") == 6440);
+""") == 5905);
     }
 
     public int Solve(string input)
@@ -28,7 +28,7 @@ QQQJA 483
 
     private class Hand
     {
-        private static List<char> _cardStrength = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+        private static List<char> _cardStrength = ['A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', 'J'];
 
         private readonly string _cards;
 
@@ -37,11 +37,9 @@ QQQJA 483
             _cards = cards;
         }
 
-        public int NumericValue => ToNumericValue();
-
         public int ToNumericValue()
         {
-            var typeValue = GetTypeNumericValue() * (int)Math.Pow(_cardStrength.Count, _cards.Length);
+            var typeValue = GetBestTypeNumericValue() * (int)Math.Pow(_cardStrength.Count, _cards.Length);
             var cardValues = _cards.Select((e, i) => GetCardNumericValue(e) * (int)Math.Pow(_cardStrength.Count, _cards.Length - i - 1));
             var cardsValue = cardValues.Sum();
 
@@ -57,9 +55,30 @@ QQQJA 483
             return _cardStrength.Count - index;
         }
 
-        private int GetTypeNumericValue()
+        private int GetBestTypeNumericValue()
         {
-            var grouped = _cards.GroupBy(e => e).Select(e => (e.Key, Count: e.Count())).ToList();
+            if (!_cards.Contains('J'))
+                return GetTypeNumericValue(_cards);
+
+            var allCardTypes = new HashSet<char>(_cards);
+            allCardTypes.ExceptWith(['J']);
+
+            var bestValue = GetTypeNumericValue(_cards);
+
+            foreach (var type in allCardTypes)
+            {
+                var betterCards = _cards.Replace('J', type);
+                var value = GetTypeNumericValue(betterCards);
+
+                bestValue = Math.Max(bestValue, value);
+            }
+
+            return bestValue;
+        }
+
+        private int GetTypeNumericValue(string cards)
+        {
+            var grouped = cards.GroupBy(e => e).Select(e => (e.Key, Count: e.Count())).ToList();
 
             // five of a kind
             if (grouped.Count == 1)
