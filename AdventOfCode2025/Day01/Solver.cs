@@ -15,7 +15,22 @@ L1
 L99
 R14
 L82
-""") == "3");
+""") == "6");
+        
+        Debug.Assert(Solve("""
+                           L268
+                           """) == "3");
+        
+        Debug.Assert(Solve("""
+                           R1000
+                           """) == "10");
+        Debug.Assert(Solve("""
+                           R50
+                           """) == "1");
+        
+        Debug.Assert(Solve("""
+                           L50
+                           """) == "1");
     }
 
     public string Solve(string input)
@@ -23,29 +38,43 @@ L82
         const int dialCount = 100;
         var rows = input.Split(Environment.NewLine);
 
-        var zeroPositionCount = 0;
+        var movesOverZero = 0;
 
         var position = 50;
         foreach (var row in rows)
         {
             var sign = row[..1] is "L" ? -1 : +1;
             var steps = int.Parse(row[1..]);
-            var move = sign * steps;
             
-            position = (position + move) % dialCount;
+            // normalize to the interval 0..99
+            movesOverZero += steps / dialCount;
+            steps %= dialCount;
+            
+            var move = sign * steps;
 
-            while (position < 0)
+            if (sign == -1 && position == 0)
+                movesOverZero--;
+            
+            position += move;
+
+            if (position < 0)
             {
                 position += dialCount;
+                movesOverZero++;
             }
             
-            if (position == 0)
+            if (position > dialCount - 1)
             {
-                zeroPositionCount++;
+                position -= dialCount;
+                movesOverZero++;
             }
+            
+            if (sign == -1 && position == 0)
+                movesOverZero++;
         }
         
-        var result = zeroPositionCount.ToString();
+        var result = movesOverZero.ToString();
+        Console.WriteLine(result);
         return result;
     }
 }
